@@ -1,4 +1,4 @@
-package com.online_shop.onlineShop.model;
+package com.online_shop.onlineShop.User.model;
 
 import jakarta.persistence.*;
 import lombok.*;

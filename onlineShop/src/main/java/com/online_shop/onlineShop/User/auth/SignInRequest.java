@@ -1,5 +1,4 @@
-package com.online_shop.onlineShop.auth;
-
+package com.online_shop.onlineShop.User.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,8 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class SignUpRequest {
+public class SignInRequest {
     private String username;
-    private String email;
-    private String password;
+    String password;
 }

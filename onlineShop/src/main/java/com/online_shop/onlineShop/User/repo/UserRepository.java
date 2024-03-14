@@ -1,6 +1,6 @@
-package com.online_shop.onlineShop.repo;
+package com.online_shop.onlineShop.User.repo;
 
-import com.online_shop.onlineShop.model.User;
+import com.online_shop.onlineShop.User.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

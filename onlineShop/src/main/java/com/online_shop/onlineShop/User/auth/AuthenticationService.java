@@ -1,10 +1,9 @@
-package com.online_shop.onlineShop.auth;
+package com.online_shop.onlineShop.User.auth;
 
-import com.online_shop.onlineShop.config.JwtService;
-import com.online_shop.onlineShop.model.Role;
-import com.online_shop.onlineShop.model.User;
-import com.online_shop.onlineShop.repo.UserRepository;
-import com.online_shop.onlineShop.services.UserService;
+import com.online_shop.onlineShop.User.config.JwtService;
+import com.online_shop.onlineShop.User.model.Role;
+import com.online_shop.onlineShop.User.model.User;
+import com.online_shop.onlineShop.User.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

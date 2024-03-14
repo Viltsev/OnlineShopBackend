@@ -1,6 +1,6 @@
-package com.online_shop.onlineShop.config;
+package com.online_shop.onlineShop.User.config;
 
-import com.online_shop.onlineShop.model.User;
+import com.online_shop.onlineShop.User.model.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;

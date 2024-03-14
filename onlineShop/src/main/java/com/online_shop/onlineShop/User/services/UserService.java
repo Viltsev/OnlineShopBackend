@@ -1,8 +1,8 @@
-package com.online_shop.onlineShop.services;
+package com.online_shop.onlineShop.User.services;
 
-import com.online_shop.onlineShop.model.Role;
-import com.online_shop.onlineShop.model.User;
-import com.online_shop.onlineShop.repo.UserRepository;
+import com.online_shop.onlineShop.User.model.Role;
+import com.online_shop.onlineShop.User.model.User;
+import com.online_shop.onlineShop.User.repo.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
