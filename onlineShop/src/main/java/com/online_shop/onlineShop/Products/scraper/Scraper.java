@@ -1,4 +1,7 @@
-package com.online_shop.onlineShop.Scraper;
+package com.online_shop.onlineShop.Products.scraper;
+import com.online_shop.onlineShop.Products.model.Product;
+import com.online_shop.onlineShop.Products.model.ShoesCategory;
+import com.online_shop.onlineShop.Products.repo.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -10,12 +13,15 @@ import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
-public class ScraperService {
-    private static final Logger logger = LoggerFactory.getLogger(ScraperService.class);
-
+public class Scraper {
+    private static final Logger logger = LoggerFactory.getLogger(Scraper.class);
+    private final ProductRepository repository;
     public List<String> pagesScraper(String mainLink) throws IOException {
         List<String> pagesLinks = new ArrayList<>();
 
@@ -54,6 +60,26 @@ public class ScraperService {
         return imageUrls;
     }
 
+    private static Long generateRandomNonNegativeId() {
+        return ThreadLocalRandom.current().nextLong(0, Long.MAX_VALUE);
+    }
+
+    private static String normalizePrice(String price) {
+        Pattern pattern = Pattern.compile("\\d+ ₽");
+        Matcher matcher = pattern.matcher(price);
+
+        String newPrice = "";
+
+        while (matcher.find()) {
+            String match = matcher.group();
+            newPrice = match.replaceAll("[^\\d]", "");
+            if (!newPrice.isEmpty()) {
+                break;
+            }
+        }
+        return newPrice + " ₽";
+    }
+
     public List<Product> contentScraper(String link) throws IOException {
         List<Product> productList = new ArrayList<>();
 
@@ -63,9 +89,16 @@ public class ScraperService {
 
         for (Element li : listItems) {
             List<String> imageUrls = new ArrayList<>();
+            String price = "";
+            String title = "";
 
             Element titleElement = li.selectFirst("a.products__item-title");
             Element priceElement = li.selectFirst("p.products__item-price");
+
+            if (titleElement != null && priceElement != null) {
+                title = titleElement.text();
+                price = normalizePrice(priceElement.text());
+            }
 
             Element itemGalleryLink = page.selectFirst("a.products__item-gallery");
 
@@ -75,19 +108,21 @@ public class ScraperService {
                 imageUrls.addAll(newImages);
             }
 
-            if (titleElement != null && priceElement != null) {
-                String productTitle = titleElement.text();
-                String productPrice = priceElement.text();
-                System.out.println("Product title " + productTitle);
-                System.out.println("Product price " + productPrice);
-                imageUrls.forEach(System.out::println);
-            }
+            Product product = Product
+                    .builder()
+                    .price(price)
+                    .title(title)
+                    .imageUrls(imageUrls)
+                    .build();
+
+            productList.add(product);
         }
 
+        System.out.println(productList);
         return productList;
     }
 
-    public String scrapeData() throws IOException {
+    public List<ShoesCategory> scrapeData() throws IOException {
         List<ShoesCategory> shoesCategories = new ArrayList<>();
         String mainUrl = "https://sergeev-store.ru/obuv";
 
@@ -119,15 +154,15 @@ public class ScraperService {
                 }
             });
 
-            ShoesCategory shoesCategory = ShoesCategory
-                    .builder()
-                    .categoryTitle(entry.getValue())
-                    .productList(productList)
-                    .build();
+            ShoesCategory shoesCategory = new ShoesCategory();
+
+            shoesCategory.setCategoryTitle(entry.getValue());
+            shoesCategory.setProductList(productList);
 
             shoesCategories.add(shoesCategory);
+            break;
         }
 
-        return "Data has been successfully scrapped!";
+        return shoesCategories;
     }
 }
