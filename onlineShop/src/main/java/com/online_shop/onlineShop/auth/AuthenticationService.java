@@ -4,6 +4,7 @@ import com.online_shop.onlineShop.config.JwtService;
 import com.online_shop.onlineShop.model.Role;
 import com.online_shop.onlineShop.model.User;
 import com.online_shop.onlineShop.repo.UserRepository;
+import com.online_shop.onlineShop.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -13,33 +14,37 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
-    private final UserRepository repository;
-    private final PasswordEncoder passwordEncoder;
+    private final UserService userService;
     private final JwtService jwtService;
+    private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
 
-    public AuthenticationResponse register(RegisterRequest request) {
+    public AuthenticationResponse signUp(SignUpRequest request) {
+
         var user = User.builder()
-                .firstname(request.getFirstname())
-                .lastname(request.getLastname())
+                .username(request.getUsername())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(Role.USER)
+                .role(Role.ROLE_USER)
                 .build();
-        repository.save(user);
-        var jwtToken = jwtService.generateToken(user);
-        return AuthenticationResponse.builder()
-                .token(jwtToken)
-                .build();
+
+        userService.create(user);
+
+        var jwt = jwtService.generateToken(user);
+        return new AuthenticationResponse(jwt);
     }
 
-    public AuthenticationResponse authenticate(AuthenticationRequest request) {
-        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
-        var user = repository.findByEmail(request.getEmail())
-                .orElseThrow();
-        var jwtToken = jwtService.generateToken(user);
-        return AuthenticationResponse.builder()
-                .token(jwtToken)
-                .build();
+    public AuthenticationResponse signIn(SignInRequest request) {
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+                request.getUsername(),
+                request.getPassword()
+        ));
+
+        var user = userService
+                .userDetailsService()
+                .loadUserByUsername(request.getUsername());
+
+        var jwt = jwtService.generateToken(user);
+        return new AuthenticationResponse(jwt);
     }
 }
