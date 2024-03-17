@@ -15,8 +15,18 @@ import java.util.List;
 public class CartController {
     private final CartService service;
     @PostMapping("/save_item")
-    public String createData(@RequestBody CartReq cartReq) throws IOException {
+    public String createData(@RequestBody CartReq cartReq) {
         return service.saveToCart(cartReq.getId(), cartReq.getEmail());
+    }
+
+    @DeleteMapping("/delete_item")
+    public String deleteItem(@RequestBody CartReq cartReq) {
+        return service.deleteItem(cartReq.getId(), cartReq.getEmail());
+    }
+
+    @DeleteMapping("/delete_all/{email}")
+    public String deleteAllItems(@PathVariable String email) {
+        return service.deleteAllItems(email);
     }
 
     @GetMapping("/get_cart/{email}")

@@ -54,4 +54,43 @@ public class CartServiceImplementation implements CartService {
     public Optional<Product> getProductById(Long id) {
         return productRepository.findById(id);
     }
+
+    @Override
+    public String deleteItem(Long id, String email) {
+        Optional<User> userOptional = userService.getByEmail(email);
+
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            List<Product> userCart = user.getUserCart();
+
+            Optional<Product> optionalProduct = userCart.stream()
+                    .filter(product -> product.getId().equals(id))
+                    .findFirst();
+
+            optionalProduct.ifPresent(product -> {
+                userCart.remove(product);
+                userRepository.save(user);
+            });
+            return "Product has been deleted!";
+        } else {
+            return "Something wrong";
+        }
+    }
+
+    @Override
+    public String deleteAllItems(String email) {
+        Optional<User> userOptional = userService.getByEmail(email);
+
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            List<Product> userCart = user.getUserCart();
+            userCart.clear();
+            user.setUserCart(userCart);
+            userRepository.save(user);
+
+            return "All products have been deleted!";
+        } else {
+            return "There is not such user";
+        }
+    }
 }

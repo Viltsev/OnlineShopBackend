@@ -9,4 +9,6 @@ public interface CartService {
     String saveToCart(Long id, String email);
     List<Product> getCartItems(String email);
     Optional<Product> getProductById(Long id);
+    String deleteItem(Long id, String email);
+    String deleteAllItems(String email);
 }
