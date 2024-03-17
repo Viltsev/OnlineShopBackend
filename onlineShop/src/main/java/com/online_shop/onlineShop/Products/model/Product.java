@@ -16,6 +16,13 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String title;
+
+    @Column(columnDefinition = "TEXT")
+    private String description;
     private String price;
     private List<String> imageUrls;
+
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "size_id")
+    private List<Size> sizeList;
 }

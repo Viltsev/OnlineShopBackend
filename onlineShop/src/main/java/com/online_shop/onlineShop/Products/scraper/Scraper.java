@@ -1,6 +1,7 @@
 package com.online_shop.onlineShop.Products.scraper;
 import com.online_shop.onlineShop.Products.model.Product;
 import com.online_shop.onlineShop.Products.model.ShoesCategory;
+import com.online_shop.onlineShop.Products.model.Size;
 import com.online_shop.onlineShop.Products.repo.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.jsoup.Jsoup;
@@ -21,7 +22,7 @@ import java.util.regex.Pattern;
 @RequiredArgsConstructor
 public class Scraper {
     private static final Logger logger = LoggerFactory.getLogger(Scraper.class);
-    private final ProductRepository repository;
+
     public List<String> pagesScraper(String mainLink) throws IOException {
         List<String> pagesLinks = new ArrayList<>();
 
@@ -43,6 +44,55 @@ public class Scraper {
         return pagesLinks;
     }
 
+    private List<Size> scrapeSizes(String link) throws IOException {
+        List<Size> sizeList = new ArrayList<>();
+        List<String> usSize = new ArrayList<>();
+        List<String> ukSize = new ArrayList<>();
+        List<String> euSize = new ArrayList<>();
+        List<String> ruSize = new ArrayList<>();
+
+        Document page = Jsoup.connect(link).get();
+        Elements sizesItems = page.getElementsByClass("ui-check__option");
+
+        // sizes scrapping
+        sizesItems.forEach(item -> {
+            String size = item.text();
+            String titleSize = getSizeTitle(size);
+            switch (titleSize) {
+                case "US" -> usSize.add(size);
+                case "UK" -> ukSize.add(size);
+                case "EU" -> euSize.add(size);
+                case "RU" -> ruSize.add(size);
+            }
+        });
+
+        Size usSizes = new Size();
+        usSizes.setTitleSize("US");
+        usSizes.setSize(usSize);
+        Size ukSizes = new Size();
+        ukSizes.setTitleSize("UK");
+        ukSizes.setSize(ukSize);
+        Size euSizes = new Size();
+        euSizes.setTitleSize("EU");
+        euSizes.setSize(euSize);
+        Size ruSizes = new Size();
+        ruSizes.setTitleSize("RU");
+        ruSizes.setSize(ruSize);
+
+        sizeList.add(usSizes);
+        sizeList.add(ukSizes);
+        sizeList.add(euSizes);
+        sizeList.add(ruSizes);
+
+        return sizeList;
+    }
+
+    private String scrapeDescription(String link) throws IOException {
+        Document page = Jsoup.connect(link).get();
+        Element descriptionItem = page.selectFirst("div.editor");
+        return descriptionItem.text();
+    }
+
     private List<String> scrapeImages(String link) throws IOException {
         List<String> imageUrls = new ArrayList<>();
 
@@ -60,26 +110,6 @@ public class Scraper {
         return imageUrls;
     }
 
-    private static Long generateRandomNonNegativeId() {
-        return ThreadLocalRandom.current().nextLong(0, Long.MAX_VALUE);
-    }
-
-    private static String normalizePrice(String price) {
-        Pattern pattern = Pattern.compile("\\d+ ₽");
-        Matcher matcher = pattern.matcher(price);
-
-        String newPrice = "";
-
-        while (matcher.find()) {
-            String match = matcher.group();
-            newPrice = match.replaceAll("[^\\d]", "");
-            if (!newPrice.isEmpty()) {
-                break;
-            }
-        }
-        return newPrice + " ₽";
-    }
-
     public List<Product> contentScraper(String link) throws IOException {
         List<Product> productList = new ArrayList<>();
 
@@ -89,8 +119,11 @@ public class Scraper {
 
         for (Element li : listItems) {
             List<String> imageUrls = new ArrayList<>();
+            List<Size> sizeList = new ArrayList<>();
+
             String price = "";
             String title = "";
+            String description = "";
 
             Element titleElement = li.selectFirst("a.products__item-title");
             Element priceElement = li.selectFirst("p.products__item-price");
@@ -105,14 +138,19 @@ public class Scraper {
             if (itemGalleryLink != null) {
                 String itemUrl = itemGalleryLink.attr("href");
                 List<String> newImages = scrapeImages(itemUrl);
+                List<Size> newSizes = scrapeSizes(itemUrl);
+                description = scrapeDescription(itemUrl);
                 imageUrls.addAll(newImages);
+                sizeList.addAll(newSizes);
             }
 
             Product product = Product
                     .builder()
                     .price(price)
                     .title(title)
+                    .description(description)
                     .imageUrls(imageUrls)
+                    .sizeList(sizeList)
                     .build();
 
             productList.add(product);
@@ -160,9 +198,41 @@ public class Scraper {
             shoesCategory.setProductList(productList);
 
             shoesCategories.add(shoesCategory);
-            break;
         }
 
         return shoesCategories;
+    }
+
+    private static Long generateRandomNonNegativeId() {
+        return ThreadLocalRandom.current().nextLong(0, Long.MAX_VALUE);
+    }
+
+    private static String normalizePrice(String price) {
+        Pattern pattern = Pattern.compile("\\d+ ₽");
+        Matcher matcher = pattern.matcher(price);
+
+        String newPrice = "";
+
+        while (matcher.find()) {
+            String match = matcher.group();
+            newPrice = match.replaceAll("[^\\d]", "");
+            if (!newPrice.isEmpty()) {
+                break;
+            }
+        }
+        return newPrice + " ₽";
+    }
+
+    private static String getSizeTitle(String size) {
+        String pattern = "(\\d+)\\s+(\\w+)";
+
+        Pattern r = Pattern.compile(pattern);
+        Matcher m = r.matcher(size);
+
+        if (m.find()) {
+            return m.group(2);
+        } else {
+            return "";
+        }
     }
 }
