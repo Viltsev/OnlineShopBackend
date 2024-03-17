@@ -1,6 +1,8 @@
 package com.online_shop.onlineShop.Products.services;
 
+import com.online_shop.onlineShop.Products.model.Product;
 import com.online_shop.onlineShop.Products.model.ShoesCategory;
+import com.online_shop.onlineShop.Products.repo.ProductRepository;
 import com.online_shop.onlineShop.Products.repo.ShoesCategoryRepository;
 import com.online_shop.onlineShop.Products.scraper.Scraper;
 import lombok.RequiredArgsConstructor;
@@ -8,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor

@@ -198,6 +198,7 @@ public class Scraper {
             shoesCategory.setProductList(productList);
 
             shoesCategories.add(shoesCategory);
+            break;
         }
 
         return shoesCategories;

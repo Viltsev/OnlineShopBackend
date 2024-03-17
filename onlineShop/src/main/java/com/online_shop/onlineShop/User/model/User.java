@@ -1,5 +1,6 @@
 package com.online_shop.onlineShop.User.model;
 
+import com.online_shop.onlineShop.Products.model.Product;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -31,6 +32,10 @@ public class User implements UserDetails {
 
     @Column(name = "email", unique = true, nullable = false)
     private String email;
+
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "cart_id")
+    private List<Product> userCart;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)

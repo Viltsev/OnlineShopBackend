@@ -9,6 +9,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -32,7 +34,14 @@ public class UserService {
     public User getByUsername(String username) {
         return repository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден"));
+    }
 
+    public Optional<User> findByEmail(String email) {
+        return Optional.ofNullable(repository.findByEmail(email));
+    }
+    public Optional<User> getByEmail(String email) {
+        Optional<User> user = findByEmail(email);
+        return user;
     }
 
     public UserDetailsService userDetailsService() {
